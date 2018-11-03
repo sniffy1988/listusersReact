@@ -1,28 +1,68 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {Component} from 'react';
+import Users from './components/Users';
+import MainUser from './components/MainUser';
+import axios from 'axios';
+
 
 class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
-  }
+    state = {
+        users: [],
+        selectedUser: {}
+    };
+
+    selectUserHandler = (user) => {
+        this.setState({
+            selectedUser: user
+        });
+    };
+
+    onUserDelete = (e, user) => {
+        e.preventDefault();
+
+        const oldUsers = this.state.users;
+
+        let newUsers = oldUsers.filter((item) => {
+           if(item.id !== user.id) {
+               return true;
+           }
+        });
+
+        const newSelected = oldUsers.find((item) => {
+            return item.id === user.id + 1;
+        });
+
+        this.setState({
+            users: newUsers,
+            selectedUser: newSelected
+        });
+    };
+
+
+    async componentDidMount() {
+        const request = await axios.get('https://jsonplaceholder.typicode.com/users');
+        // let {data} = users;
+        if (request.status === 200) {
+            let {data} = request;
+            this.setState({
+                users: data
+            });
+        }
+    };
+
+    render() {
+        return (
+            <div className={'container'}>
+                <div className="row">
+                    <div className="col-md-8">
+                        <MainUser user={this.state.selectedUser} onUserDelete={this.onUserDelete}/>
+                    </div>
+                    <div className="col-md-4">
+                        <Users users={this.state.users} selectUserHandler={this.selectUserHandler}/>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 }
 
 export default App;
